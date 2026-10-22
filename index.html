@@ -1,117 +1,13 @@
 <!doctype html>
-<html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <meta name="theme-color" content="#101a2b">
-  <title>Fútbol Stats | Estadísticas y análisis</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
+<html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1"><meta name="theme-color" content="#08101f"><title>Fútbol Stats | Últimos cinco partidos</title><link rel="stylesheet" href="styles.css"></head>
 <body>
-  <header class="topbar">
-    <a class="brand" href="#"><span class="brand-mark">⚽</span><span>FÚTBOL<span class="brand-accent">STATS</span><small>DATOS PARA ENTENDER EL JUEGO</small></span></a>
-    <nav><a class="active" href="#partidos">Partidos</a><a href="#estadisticas">Estadísticas</a><a href="#comparador">Comparador</a><a href="#analizador">Analizador</a></nav>
-    <span class="live-pill"><i></i> DATOS</span>
-  </header>
-
-  <main>
-    <section class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">CENTRO DE ANÁLISIS FUTBOLÍSTICO</p>
-        <h1>El fútbol, más allá<br>del <span>resultado.</span></h1>
-        <p class="hero-text">Analiza goles, goles esperados, tiros, córners y tarjetas en las principales ligas.</p>
-        <a class="primary-btn" href="#partidos">Explorar partidos <span>↘</span></a>
-      </div>
-      <div class="hero-graphic" aria-hidden="true">
-        <div class="pitch"><div class="pitch-mid"></div><div class="center-circle"></div><div class="box left-box"></div><div class="box right-box"></div><span class="ball">⚽</span></div>
-        <div class="floating-stat stat-one"><small>ANÁLISIS</small><strong>EN DATOS</strong><span>Tu siguiente lectura del juego</span></div>
-        <div class="floating-stat stat-two"><small>PLATAFORMA</small><strong>100% FÚTBOL</strong></div>
-      </div>
-    </section>
-
-    <section class="section" id="estadisticas">
-      <div class="section-heading"><div><p class="eyebrow">VISTA GENERAL</p><h2>El juego en números</h2></div><span class="muted" id="dataStatus">Cargando datos…</span></div>
-      <div class="metrics">
-        <article class="metric-card"><span class="metric-icon">▦</span><p>Partidos registrados</p><strong id="totalMatches">—</strong><small>En tu base de datos</small></article>
-        <article class="metric-card"><span class="metric-icon">⚽</span><p>Goles registrados</p><strong id="totalGoals">—</strong><small>Entre todos los partidos</small></article>
-        <article class="metric-card"><span class="metric-icon">◉</span><p>Promedio de goles</p><strong id="avgGoals">—</strong><small>Por partido</small></article>
-        <article class="metric-card"><span class="metric-icon">⌁</span><p>Ligas disponibles</p><strong id="totalLeagues">—</strong><small>En tu hoja de cálculo</small></article>
-      </div>
-    </section>
-
-    <section class="section" id="partidos">
-      <div class="section-heading"><div><p class="eyebrow">RESULTADOS Y RENDIMIENTO</p><h2>Partidos</h2></div></div>
-      <div class="filters">
-        <label class="search-box">⌕ <input id="searchInput" type="search" placeholder="Buscar equipo o liga…"></label>
-        <select id="leagueFilter" aria-label="Filtrar por liga"><option value="">Todas las ligas</option></select>
-        <button id="reloadBtn" class="secondary-btn">↻ Actualizar</button>
-      </div>
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>FECHA</th><th>LIGA</th><th>LOCAL</th><th class="center">MARCADOR</th><th>VISITANTE</th><th class="center">xG LOCAL – VISITANTE</th><th class="center">ESTADO</th></tr></thead>
-          <tbody id="matchesBody"><tr><td colspan="6" class="empty">Cargando partidos…</td></tr></tbody>
-        </table>
-      </div>
-      <p class="table-note">Los datos se leen desde tu Google Sheets. Edita la hoja para actualizar la información.</p>
-    </section>
-
-    <section class="section compare-section" id="comparador">
-      <div class="section-heading"><div><p class="eyebrow">CARA A CARA</p><h2>Comparador de equipos</h2></div></div>
-      <div class="compare-controls">
-        <label>Equipo A<select id="teamA"></select></label>
-        <span class="versus">VS</span>
-        <label>Equipo B<select id="teamB"></select></label>
-      </div>
-      <div id="comparison" class="comparison-grid"><p class="empty">Agrega partidos a Google Sheets para comparar equipos.</p></div>
-    </section>
-
-    <section class="section analyzer-section" id="analizador">
-      <div class="section-heading">
-        <div><p class="eyebrow">ANÁLISIS DE MERCADOS</p><h2>Analizador de últimos cinco partidos</h2></div>
-        <span class="muted">Datos históricos de Google Sheets</span>
-      </div>
-      <p class="analyzer-intro">Selecciona una liga, el equipo que quieres analizar, su rival y la estadística. Usamos los cinco partidos más recientes de cada equipo, sin separar por localía.</p>
-      <div class="analyzer-controls">
-        <label>Liga<select id="anLeague"><option value="">Todas las ligas</option></select></label>
-        <label>Equipo a analizar<select id="anTeam"><option value="">Selecciona equipo</option></select></label>
-        <label>Rival<select id="anOpponent"><option value="">Selecciona rival</option></select></label>
-        <label>Estadística<select id="anMetric">
-          <option value="shots">Tiros totales</option>
-          <option value="sot">Tiros al marco</option>
-          <option value="corners">Córners</option>
-          <option value="goals">Goles</option>
-          <option value="xg">Goles esperados (xG)</option>
-          <option value="fouls">Faltas cometidas</option>
-          <option value="yellow">Tarjetas amarillas</option>
-          <option value="red">Tarjetas rojas</option>
-        </select></label>
-      </div>
-      <div id="analyzerSummary" class="analyzer-summary"><p class="empty">Conecta los datos y selecciona un equipo y un rival para comenzar.</p></div>
-      <div class="analyzer-layout">
-        <div class="analyzer-panel">
-          <h3>Últimos cinco partidos del equipo</h3>
-          <div class="table-wrap"><table class="analyzer-table"><thead><tr><th>Partido</th><th>Localía</th><th>Marcador</th><th>Valor</th></tr></thead><tbody id="anTeamRows"><tr><td colspan="4" class="empty">Selecciona un equipo.</td></tr></tbody></table></div>
-        </div>
-        <div class="analyzer-panel">
-          <h3>Últimos cinco partidos del rival</h3>
-          <p class="muted">La columna de valor muestra lo que sus rivales lograron contra él.</p>
-          <div class="table-wrap"><table class="analyzer-table"><thead><tr><th>Partido</th><th>Localía</th><th>Marcador</th><th>Concedido</th></tr></thead><tbody id="anOpponentRows"><tr><td colspan="4" class="empty">Selecciona un rival.</td></tr></tbody></table></div>
-        </div>
-      </div>
-      <div class="analyzer-panel market-panel">
-        <div class="section-heading"><div><p class="eyebrow">LÍNEA Y CUOTA</p><h3>Evaluar una apuesta</h3></div></div>
-        <div class="market-controls">
-          <label>Línea de apuesta<input id="anLine" type="number" min="0" step="0.5" value="10.5"></label>
-          <label>Cuota decimal<input id="anOdds" type="number" min="1.01" step="0.01" value="1.90"></label>
-          <button id="anCalculate" class="primary-btn" type="button">Calcular análisis ↗</button>
-        </div>
-        <div id="anMarketResult" class="market-result"><p class="empty">Elige los equipos para ver líneas sugeridas y frecuencias históricas.</p></div>
-        <p class="table-note">Las frecuencias describen únicamente los partidos disponibles; cinco observaciones son una muestra pequeña. La estimación no es una garantía ni una probabilidad calibrada. Verifica los datos y las condiciones del mercado antes de tomar decisiones.</p>
-      </div>
-    </section>
-
-    <footer><a class="brand footer-brand" href="#"><span class="brand-mark">⚽</span><span>FÚTBOL<span class="brand-accent">STATS</span><small>DATOS PARA ENTENDER EL JUEGO</small></span></a><p>Tu pasión por el fútbol, respaldada por datos.</p><span>© <span id="year"></span> Fútbol Stats</span></footer>
-  </main>
-  <script src="app.js"></script>
-</body>
-</html>
+<header class="topbar"><a class="brand" href="#inicio"><span class="brand-ball">⚽</span><span>FÚTBOL <b>STATS</b><small>DATOS PARA ENTENDER EL JUEGO</small></span></a><nav><a href="#partidos">Partidos</a><a class="active" href="#tabla">Estadísticas</a><a href="#tabla">Últimos 5</a></nav><div class="data-pill"><i></i><span id="dataStatus">Conectando datos…</span></div></header>
+<main id="inicio">
+<section class="selector-shell" id="partidos"><div class="selectors">
+<label class="select-label"><span class="label-icon">🏆</span><span>Seleccionar liga</span><select id="leagueSelect"><option value="">Todas las ligas</option></select></label>
+<label class="select-label"><span class="label-icon">👕</span><span>Seleccionar equipo</span><select id="teamSelect"><option value="">Selecciona equipo</option></select></label>
+</div><div class="team-profile"><div class="league-logo-wrap"><img id="leagueLogo" alt="Escudo de la liga"><span id="leagueFallback">🏆</span></div><div class="profile-divider"></div><img id="teamLogo" class="main-crest" alt="Escudo del equipo"><div class="profile-copy"><p class="eyebrow">EQUIPO SELECCIONADO</p><h1 id="teamName">Selecciona un equipo</h1><p id="leagueName" class="league-caption">Para ver sus últimos cinco partidos</p><div class="profile-chips"><span>⚽ <b id="teamGoals">—</b> goles a favor</span><span>🎯 <b id="teamShots">—</b> remates promedio</span><span>📊 <b id="teamPlayed">0/5</b> partidos</span></div></div></div></section>
+<section class="recent-section"><div class="section-title"><div><span class="section-icon">▣</span><div><p class="eyebrow">FORMA RECIENTE</p><h2>Últimos 5 partidos</h2></div></div><div class="view-switch" role="group" aria-label="Filtrar por localía"><button class="active" data-location="all">General</button><button data-location="home">⌂ Local</button><button data-location="away">✈ Visitante</button></div></div><div id="recentCards" class="recent-cards"><div class="loading-card">Cargando partidos desde Google Sheets…</div></div></section>
+<section class="table-section" id="tabla"><div class="section-title table-title"><div><span class="section-icon chart-icon">▥</span><div><p class="eyebrow">DETALLE ESTADÍSTICO</p><h2>Estadísticas detalladas <span>· Últimos 5 partidos</span></h2></div></div><div class="table-legend"><span><i class="dot attack"></i>Ataque</span><span><i class="dot defense"></i>Defensa</span><span><i class="dot discipline"></i>Disciplina</span></div></div><div class="table-wrap"><table class="stats-table"><thead id="statsHead"></thead><tbody id="statsBody"><tr><td class="empty">Selecciona un equipo para comenzar.</td></tr></tbody></table></div><p class="table-note">P1 es el partido más reciente. Los promedios se calculan únicamente con los partidos visibles que contienen un valor numérico. Los datos proceden de tu Google Sheets.</p></section>
+<footer><a class="brand footer-brand" href="#inicio"><span class="brand-ball">⚽</span><span>FÚTBOL <b>STATS</b><small>DATOS PARA ENTENDER EL JUEGO</small></span></a><p>Tu pasión por el fútbol, respaldada por datos.</p><span>© <span id="year"></span> Fútbol Stats</span></footer>
+</main><script src="app.js"></script></body></html>

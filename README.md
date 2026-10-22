@@ -1,63 +1,27 @@
-# Fútbol Stats — adaptado a tu tabla real
+# Fútbol Stats — tabla de últimos cinco partidos
 
-La plataforma está preparada para los encabezados de estadísticas que compartiste. El archivo enviado contiene **501 partidos en 8 ligas**. La página puede mostrar tus datos una vez que los pongas en Google Sheets y publiques Apps Script.
+Esta versión reemplaza la vista anterior por una pantalla enfocada en un solo equipo: escudo de liga/equipo, tarjetas de los cinco partidos más recientes y tabla estadística con promedios.
 
-## Columnas que aprovecha
-Liga, Fecha, Hora, Equipo_Local, Equipo_Visitante, Goles_Local, Goles_Visitante, Goles esperados (xG), tiros totales, tiros a puerta, faltas, córners, tarjetas amarillas y rojas, además de los goles al descanso y el resultado al descanso.
+## Archivos
+- `index.html`: estructura de la página.
+- `styles.css`: diseño responsive oscuro.
+- `app.js`: lectura JSONP de Google Apps Script, selectores, escudos y cálculos.
+- `Code.gs`: conector de Apps Script (se mantiene en Google Apps Script; no hace falta subirlo al repositorio público).
 
-## 1. Prepara Google Sheets
-1. Abre tu Google Sheets.
-2. Crea o renombra la pestaña de datos a `Partidos`.
-3. Pega la tabla con los encabezados originales en la fila 1. Los nombres deben coincidir exactamente con los de tu archivo, por ejemplo `Equipo_Local`, `Goles_Esperados_Local`, `Tiros_Totales_Local`.
-4. Si la tabla está en un archivo de texto TSV, copia todo el contenido y pégalo en la celda A1; Google Sheets suele distribuirlo por columnas automáticamente. Comprueba que cada encabezado quede en su propia columna.
+## Publicar en GitHub Pages
+1. Haz una copia de seguridad de los archivos actuales del repositorio.
+2. Sube/reemplaza `index.html`, `styles.css` y `app.js` en la raíz del repositorio `JERG-Analisis-Deportivo`.
+3. Mantén la URL activa de Apps Script en `API_URL` dentro de `app.js`. La URL incluida es la que estaba configurada en el proyecto anterior; si tu implementación activa tiene otra URL, reemplázala.
+4. Guarda con **Commit changes** y espera la publicación de GitHub Pages.
+5. Abre la web y recarga con `Ctrl + F5`.
 
-## 2. Publica Apps Script
-1. Desde esa hoja abre **Extensiones > Apps Script**.
-2. Pega el contenido de `Code.gs` y guarda.
-3. Ve a **Implementar > Nueva implementación**.
-4. Tipo: **Aplicación web**.
-5. Ejecutar como: **Yo**.
-6. Quién tiene acceso: **Cualquier persona** para permitir que la web pública lea las estadísticas.
-7. Implementa, acepta permisos y copia la URL que termina en `/exec`.
+## Requisitos de Google Sheets
+- La pestaña se llama `Partidos`.
+- La primera fila contiene los encabezados originales, incluyendo `Liga`, `Fecha`, `Equipo_Local`, `Equipo_Visitante`, goles, xG, tiros, córners, faltas y tarjetas.
+- La aplicación muestra los cinco partidos más recientes por fecha. `General`, `Local` y `Visitante` filtran la muestra según la condición del equipo seleccionado.
 
-**Privacidad:** la web será pública y el endpoint expone los datos de la pestaña `Partidos`. No pongas datos privados en esa pestaña. Este código es de solo lectura.
+## Escudos
+Se intenta cargar los escudos desde football-data.org. Para clubes no reconocidos o logos que no estén disponibles, la interfaz usa iniciales como alternativa. Los nombres de los equipos deben coincidir con los de la hoja.
 
-## 3. Conecta el frontend
-En `app.js`, cambia la línea:
-
-```js
-const API_URL = "";
-```
-
-por:
-
-```js
-const API_URL = "PEGA_AQUI_TU_URL_REAL_DE_APPS_SCRIPT";
-```
-
-No escribas el ejemplo literalmente; pega la URL que te dio Google y termina en `/exec`.
-
-## 4. Publica en GitHub Pages
-1. Crea un repositorio en GitHub, por ejemplo `futbol-stats`.
-2. Sube `index.html`, `styles.css` y `app.js` a la raíz. Puedes subir `README.md` también.
-3. En **Settings > Pages**, selecciona **Deploy from a branch**, rama `main`, carpeta `/(root)` y guarda.
-4. Espera a que GitHub muestre la URL pública de Pages.
-
-`Code.gs` se pega en Apps Script; no es necesario subirlo al repositorio público.
-
-## 5. Funciones incluidas
-- Buscador por liga y equipos.
-- Resumen de partidos, goles, promedio de goles y ligas.
-- Tabla de partidos con marcador y xG.
-- Comparador entre equipos: partidos, victorias/empates/derrotas, puntos, goles, xG/xGA, tiros, tiros a puerta, córners, faltas y tarjetas.
-- Diseño adaptable a móvil y computadora.
-
-## Nota sobre los datos
-La interfaz presenta los registros que existan en tu hoja; no descarga resultados nuevos automáticamente. El campo `Resultado_Final` usa los códigos de tu fuente (`H`, `D`, `A`), y la primera versión asume que los registros importados son partidos finalizados. Revisa fechas y nombres de equipo antes de usar estadísticas para análisis.
-
-
-## Módulo Analizador
-
-La sección **Analizador** usa los últimos cinco partidos de cada equipo en general (sin separar local/visitante). Permite elegir una liga, equipo, rival y estadística; muestra los valores individuales, promedios, una referencia combinada, líneas candidatas, frecuencias históricas y una comparación descriptiva con la probabilidad implícita de la cuota.
-
-Las frecuencias son descriptivas de muestras pequeñas y no garantizan el resultado de un partido. Verifica que los partidos tengan fechas válidas y que la pestaña `Partidos` tenga los encabezados esperados.
+## Nota sobre promedios
+Los promedios usan únicamente valores numéricos disponibles en los partidos mostrados. En las filas de defensa, las cifras representan los valores del rival frente al equipo seleccionado, usando las estadísticas local/visitante de cada partido.
