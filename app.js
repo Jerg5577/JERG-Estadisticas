@@ -66,7 +66,7 @@ function selectedGames(){return teamMatches(selectedTeam(),selectedLeague()).sli
 function statValue(m,team,row){const home=m.Equipo_Local===team;const key=home?row.forHome:row.forAway;return key?n(m[key]):null;}
 function avg(vals){const v=vals.filter(x=>x!==null&&Number.isFinite(x));return v.length?v.reduce((a,b)=>a+b,0)/v.length:null;}
 function fmt(v,dec=0){return v===null||v===undefined?"—":Number(v).toFixed(dec);}
-function matchScore(m,team){return m.Equipo_Local===team?`${fmt(n(m.Goles_Local))} – ${fmt(n(m.Goles_Visitante))}`:`${fmt(n(m.Goles_Visitante))} – ${fmt(n(m.Goles_Local))}`;}
+function matchScore(m,team){return `${fmt(n(m.Goles_Local))} – ${fmt(n(m.Goles_Visitante))}`;}
 function getOpponent(m,team){return m.Equipo_Local===team?m.Equipo_Visitante:m.Equipo_Local;}
 function getResult(m,team){const own=n(m.Equipo_Local===team?m.Goles_Local:m.Goles_Visitante),opp=n(m.Equipo_Local===team?m.Goles_Visitante:m.Goles_Local);if(own===null||opp===null)return {label:"—",cls:"result-draw"};return own>opp?{label:"G",cls:"result-win"}:own<opp?{label:"P",cls:"result-loss"}:{label:"E",cls:"result-draw"};}
 function setImg(img,url,fallback){if(!img)return;img.classList.remove("loaded");img.onerror=()=>{img.style.display="none";if(fallback)fallback.style.display="grid";};img.onload=()=>{img.classList.add("loaded");if(fallback)fallback.style.display="none";};img.src=url||"";if(!url){img.style.display="none";if(fallback)fallback.style.display="grid";}else img.style.display="block";}
