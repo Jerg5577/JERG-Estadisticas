@@ -124,7 +124,89 @@ function renderCompliance(){
 function renderCards(games){const team=selectedTeam(),out=$("recentCards");if(!team){out.innerHTML='<div class="loading-card">Selecciona un equipo para ver sus partidos.</div>';return;}if(!games.length){out.innerHTML='<div class="loading-card">No encontramos partidos del equipo con estos filtros.</div>';return;}out.innerHTML=games.map((m,i)=>{const opp=getOpponent(m,team),res=getResult(m,team),home=m.Equipo_Local===team;return `<article class="match-card ${res.cls}"><div class="match-date"><span>${dateLabel(m.Fecha)}</span><span class="ordinal">P${i+1}</span></div><div class="match-teams"><div class="mini-team">${crestHTML(home?team:opp)}<span>${safe(home?team:opp)}</span></div><strong class="match-score">${matchScore(m,team)}</strong><div class="mini-team">${crestHTML(home?opp:team)}<span>${safe(home?opp:team)}</span></div></div><span class="match-status">${res.label} · ${home?"Local":"Visitante"}</span></article>`;}).join("");}
 function headerMatch(m,team,i){const opp=getOpponent(m,team),home=m.Equipo_Local===team;return `<div class="match-head">${crestHTML(opp)}<div><b><span class="match-index">P${i+1}</span>${dateLabel(m.Fecha)}</b><small>vs ${safe(opp)} (${home?"L":"V"})</small></div></div>`;}
 function renderTable(games){const team=selectedTeam(),head=$("statsHead"),body=$("statsBody");if(!team){head.innerHTML="";body.innerHTML='<tr><td class="empty">Selecciona un equipo.</td></tr>';return;}head.innerHTML=`<tr><th>ESTADÍSTICA</th>${games.map((m,i)=>`<th>${headerMatch(m,team,i)}</th>`).join("")}<th>PROMEDIO<br><small>(${games.length} partidos)</small></th></tr>`;if(!games.length){body.innerHTML='<tr><td colspan="7" class="empty">No hay partidos disponibles con este filtro.</td></tr>';return;}body.innerHTML=statRows.map(row=>{if(row.type)return `<tr class="category-row ${row.type}"><td colspan="${games.length+2}">${row.icon} &nbsp; ${row.title}</td></tr>`;const vals=games.map(m=>statValue(m,team,row)),dec=row.decimals??0,average=avg(vals);return `<tr><td><span class="stat-label"><span class="stat-emoji">${row.icon}</span>${row.label}</span></td>${vals.map(v=>`<td>${fmt(v,dec)}</td>`).join("")}<td class="average-cell">${fmt(average,dec)}</td></tr>`;}).join("");}
-function renderAll(){const games=selectedGames();renderProfile(games);renderCards(games);renderTable(games);renderCompliance();}
+
+function insightMarketValue(m,team,market){
+ const home=m.Equipo_Local===team;
+ const own=(home?n(m.Goles_Local):n(m.Goles_Visitante));
+ const opp=(home?n(m.Goles_Visitante):n(m.Goles_Local));
+ const ownCorners=home?n(m.Corners_Local):n(m.Corners_Visitante);
+ const oppCorners=home?n(m.Corners_Visitante):n(m.Corners_Local);
+ const ownShots=home?n(m.Tiros_Totales_Local):n(m.Tiros_Totales_Visitante);
+ const oppShots=home?n(m.Tiros_Totales_Visitante):n(m.Tiros_Totales_Local);
+ const ownSot=home?n(m.Tiros_Puerta_Local):n(m.Tiros_Puerta_Visitante);
+ const oppSot=home?n(m.Tiros_Puerta_Visitante):n(m.Tiros_Puerta_Local);
+ const sum=(a,b)=>a!==null&&b!==null?a+b:null;
+ switch(market){
+  case "cornersFor":return ownCorners;
+  case "cornersAgainst":return oppCorners;
+  case "cornersTotal":return sum(ownCorners,oppCorners);
+  case "shotsFor":return ownShots;
+  case "shotsAgainst":return oppShots;
+  case "sotFor":return ownSot;
+  case "sotAgainst":return oppSot;
+  case "goalsFor":return own;
+  case "goalsAgainst":return opp;
+  case "goalsTotal":return sum(own,opp);
+  case "btts":return own!==null&&opp!==null?(own>0&&opp>0?1:0):null;
+  default:return null;
+ }
+}
+function insightMarketName(market){
+ return ({cornersFor:"Córners a favor",cornersAgainst:"Córners en contra",cornersTotal:"Córners totales",shotsFor:"Remates a favor",shotsAgainst:"Remates en contra",sotFor:"Remates a puerta a favor",sotAgainst:"Remates a puerta en contra",goalsFor:"Goles a favor",goalsAgainst:"Goles en contra",goalsTotal:"Goles totales",btts:"Ambos marcan"})[market]||"Mercado";
+}
+function leagueMatchesForInsights(){
+ const league=selectedLeague();
+ return matches.filter(m=>!league||m.Liga===league);
+}
+function makeTeamAggregates(market){
+ const stats=new Map();
+ for(const m of leagueMatchesForInsights()){
+  for(const team of [m.Equipo_Local,m.Equipo_Visitante]){
+   if(!team)continue;
+   const value=insightMarketValue(m,team,market);
+   if(value===null)continue;
+   if(!stats.has(team))stats.set(team,{team,total:0,count:0,values:[]});
+   const s=stats.get(team);s.total+=value;s.count++;s.values.push(value);
+  }
+ }
+ return [...stats.values()].map(s=>({...s,average:s.total/s.count})).sort((a,b)=>b.average-a.average);
+}
+function renderLeagueInsights(){
+ const host=$("leagueInsights");if(!host)return;
+ const market=$("leagueMarketSelect").value||"cornersFor";
+ const ranked=makeTeamAggregates(market);
+ if(!ranked.length){host.innerHTML='<p class="empty">No hay datos suficientes para este mercado en la liga seleccionada.</p>';return;}
+ const top=ranked[0],mean=ranked.reduce((s,t)=>s+t.average,0)/ranked.length;
+ const max=Math.max(...ranked.map(x=>x.average),1);
+ const topFour=ranked.slice(0,4);
+ const cards=`<div class="insight-kpis"><article><span>Equipo líder</span><strong>${safe(top.team)}</strong><small>${fmt(top.average,2)} promedio · ${top.count} registros</small></article><article><span>Promedio de la liga</span><strong>${fmt(mean,2)}</strong><small>${safe(insightMarketName(market).toLowerCase())} por registro de equipo</small></article><article><span>Total acumulado</span><strong>${fmt(ranked.reduce((s,t)=>s+t.total,0),0)}</strong><small>${ranked.reduce((s,t)=>s+t.count,0)} registros con datos</small></article><article><span>Equipos analizados</span><strong>${ranked.length}</strong><small>Con al menos un dato válido</small></article></div>`;
+ const bars=ranked.map((t,i)=>`<button class="rank-row ${i===0?'rank-leader':''}" type="button" data-insight-team="${safe(t.team)}" title="Ver gráfico individual de ${safe(t.team)}"><span class="rank-number">${i+1}</span><span class="rank-name">${crestHTML(t.team)}<b>${safe(t.team)}</b></span><span class="rank-bar-wrap"><i style="width:${Math.max(2,t.average/max*100)}%"></i></span><span class="rank-average">${fmt(t.average,2)}<small>prom.</small></span><span class="rank-total">${fmt(t.total,0)}<small>total</small></span></button>`).join("");
+ const chart=`<div class="insight-chart-layout"><div class="insight-chart-main"><div class="insight-subheading"><h3>Ranking por ${safe(insightMarketName(market).toLowerCase())}</h3><span>Selecciona un equipo para abrir su gráfico</span></div><div class="rank-list">${bars}</div></div><div class="insight-side"><p class="eyebrow">MEJOR REGISTRO</p><div class="leader-crest">${crestHTML(top.team)}</div><h3>${safe(top.team)}</h3><strong>${fmt(top.average,2)}</strong><span>promedio por partido registrado</span><div class="leader-divider"></div><p>Acumulado: <b>${fmt(top.total,0)}</b></p><p>Muestra: <b>${top.count} partidos/equipos</b></p></div></div>`;
+ host.innerHTML=cards+chart;
+ host.querySelectorAll("[data-insight-team]").forEach(btn=>btn.addEventListener("click",()=>{
+  const team=btn.dataset.insightTeam;
+  const sel=$("teamSelect");
+  if([...sel.options].some(o=>o.value===team)){sel.value=team;renderAll();$("teamInsights").scrollIntoView({behavior:"smooth",block:"center"});}
+  else renderIndividualInsights(team);
+ }));
+}
+function renderIndividualInsights(teamOverride){
+ const team=teamOverride||selectedTeam(),host=$("teamInsights");if(!host)return;
+ const title=$("individualChartTitle");
+ if(!team){title.textContent="Selecciona un equipo";host.innerHTML='<p class="empty">Selecciona un equipo para ver su evolución.</p>';return;}
+ const market=$("teamMarketSelect").value||"cornersFor";
+ const league=selectedLeague();
+ const games=sortRecent(matches.filter(m=>(m.Equipo_Local===team||m.Equipo_Visitante===team)&&(!league||m.Liga===league))).slice(0,5).reverse();
+ title.textContent=team+" · "+insightMarketName(market);
+ const vals=games.map(m=>({m,value:insightMarketValue(m,team,market)})).filter(x=>x.value!==null);
+ if(!vals.length){host.innerHTML='<p class="empty">No hay datos numéricos suficientes para este equipo y mercado.</p>';return;}
+ const avgVal=avg(vals.map(x=>x.value)),total=vals.reduce((s,x)=>s+x.value,0),max=Math.max(...vals.map(x=>x.value),1);
+ const bars=vals.map((x,i)=>`<div class="team-bar-column" title="${safe(dateLabel(x.m.Fecha))}: ${fmt(x.value,1)}"><span class="team-bar-value">${fmt(x.value,1)}</span><div class="team-bar-track"><i style="height:${Math.max(4,x.value/max*100)}%"></i></div><span class="team-bar-label">${safe(dateLabel(x.m.Fecha))}</span><small>${safe(x.m.Equipo_Local)} ${fmt(n(x.m.Goles_Local))}-${fmt(n(x.m.Goles_Visitante))} ${safe(x.m.Equipo_Visitante)}</small></div>`).join("");
+ host.innerHTML=`<div class="individual-kpis"><div><span>Promedio</span><b>${fmt(avgVal,2)}</b></div><div><span>Total</span><b>${fmt(total,0)}</b></div><div><span>Partidos con datos</span><b>${vals.length}</b></div></div><div class="team-bar-chart">${bars}</div>`;
+}
+function renderInsights(){renderLeagueInsights();renderIndividualInsights();}
+
+function renderAll(){const games=selectedGames();renderProfile(games);renderCards(games);renderTable(games);renderCompliance();renderInsights();}
 function loadData(){return new Promise((resolve,reject)=>{const cb="footballStatsUI_"+Date.now(),script=document.createElement("script");let finished=false;const timeout=setTimeout(()=>finish(new Error("Tiempo de espera agotado al conectar con Google Sheets.")),20000);function finish(err,payload){if(finished)return;finished=true;clearTimeout(timeout);delete window[cb];script.remove();if(err)return reject(err);if(!payload||payload.ok!==true||!Array.isArray(payload.data))return reject(new Error(payload?.error||"La API no devolvió datos válidos."));resolve(payload.data);}window[cb]=payload=>finish(null,payload);script.onerror=()=>finish(new Error("No se pudo cargar Apps Script. Revisa la URL /exec y los permisos."));script.src=API_URL+(API_URL.includes("?")?"&":"?")+"callback="+encodeURIComponent(cb)+"&_="+Date.now();document.body.appendChild(script);});}
 async function refreshData(){const status=$("dataStatus");status.textContent="Conectando datos…";try{matches=await loadData();status.textContent=`Google Sheets conectado · ${matches.length} partidos`;status.parentElement.classList.remove("error");fillSelectors();renderAll();}catch(err){console.error("Error al cargar partidos:",err);status.textContent="Error de conexión";status.parentElement.classList.add("error");$("recentCards").innerHTML=`<div class="loading-card">${safe(err.message)}<br>Comprueba la implementación de Apps Script.</div>`;$("statsBody").innerHTML=`<tr><td class="empty">${safe(err.message)}</td></tr>`;}}
 $("leagueSelect").addEventListener("change",()=>{fillSelectors();renderAll();});$("teamSelect").addEventListener("change",renderAll);$("marketSelect").addEventListener("change",()=>{
@@ -134,4 +216,4 @@ $("leagueSelect").addEventListener("change",()=>{fillSelectors();renderAll();});
  const lineLabel=$("marketLine").closest("label");
  if(lineLabel)lineLabel.style.display=market==="btts"?"none":"grid";
  renderCompliance();
-});$("marketLine").addEventListener("input",renderCompliance);document.querySelectorAll("[data-location]").forEach(btn=>btn.addEventListener("click",()=>{selectedLocation=btn.dataset.location;document.querySelectorAll("[data-location]").forEach(b=>b.classList.toggle("active",b===btn));renderAll();}));$("year").textContent=new Date().getFullYear();refreshData();
+});$("marketLine").addEventListener("input",renderCompliance);$("leagueMarketSelect").addEventListener("change",renderLeagueInsights);$("teamMarketSelect").addEventListener("change",()=>renderIndividualInsights());document.querySelectorAll("[data-location]").forEach(btn=>btn.addEventListener("click",()=>{selectedLocation=btn.dataset.location;document.querySelectorAll("[data-location]").forEach(b=>b.classList.toggle("active",b===btn));renderAll();}));$("year").textContent=new Date().getFullYear();refreshData();
